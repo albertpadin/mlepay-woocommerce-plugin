@@ -1,2 +1,2 @@
-mlepay-woocommerce-plugin
+MlePay Woocommerce Plugin
 =========================
