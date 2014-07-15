@@ -1,6 +1,7 @@
-==========================================
-  
-  How to implement MLePay Woocommerce Plugin
+MLePay Woocommerce Plugin
+=========================
+
+How to implement  
   
   1. Download the plugin.
   2. Get the API Key, Secret Key and Email address in your MLePay account.
