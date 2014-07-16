@@ -9,7 +9,7 @@ How to implement
       "Ex. https://yourwebsitename.com/wp-admin"
   4. Setup the plugin.
       * Go to Woocommerce menu
-      * CLick Settings
+      * Click Settings
       * Click Checkout tab for checkout option then choose MLePay
       * Fill up the fields with the correct credentials. 
           - Checked the MLePay payment module.
