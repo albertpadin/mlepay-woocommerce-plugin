@@ -1,5 +1,5 @@
 <?php
-if ( ! defined( 'ABSPATH' ) ) { 
+if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
@@ -21,7 +21,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
     /**
     * Gateway class
     **/
-    class WC_Gateway_MlePay extends WC_Payment_Gateway { 
+    class WC_Gateway_MlePay extends WC_Payment_Gateway {
 
       var $notify_url;
 
@@ -35,7 +35,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 
         $this->init_form_fields();
         $this->init_settings();
-   
+
         $this->title = $this->settings['title'];
         $this->instructions = $this->settings['instructions'];
         $this->description = $this->settings['description'];
@@ -48,9 +48,9 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
         add_action('woocommerce_api_wc_gateway_mlepay', array($this, 'check_ipn_response'));
         add_action( 'woocommerce_update_options_payment_gateways_' . $this->id, array( $this, 'process_admin_options' ) );
         add_action( 'woocommerce_receipt_mlepay', array( $this, 'receipt_page' ) );
-      
+
       }
-      
+
       /**
        * Initialize Gateway Settings Form Fields
        */
@@ -95,11 +95,11 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
                 'description' => __('Instructions for the customer on how to pay using MLePay.', 'gateway'),
                 'default' => __('Present the above code in any M Lhuillier branch and pay to complete your order.', 'gateway'))
         );
-      
+
       }
 
       /**
-      * Admin Panel Options 
+      * Admin Panel Options
       */
       public function admin_options() {
 
@@ -117,7 +117,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
       function process_payment( $order_id ) {
 
         global $woocommerce;
-        
+
         $order = new WC_Order( $order_id );
         $woocommerce->cart->empty_cart();
 
@@ -131,7 +131,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
         else{
           $woocommerce->add_error(__('Currency Error: ', 'woothemes') . "will only accept PHP currency.");
         }
-      
+
       }
 
       /**
@@ -140,7 +140,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
       function receipt_page( $order_id ) {
 
         global $woocommerce;
-        
+
         try{
 
           $order = new WC_Order( $order_id );
@@ -153,7 +153,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
           $product_name = array();
 
           foreach ( $order->get_items() as $item ) {
-           
+
             if ( $item['qty'] ) {
 
                 $item_loop++;
@@ -167,7 +167,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
           }
 
           $request_body = array(
-                  "receiver_email"=> $this->merchant_email, 
+                  "receiver_email"=> $this->merchant_email,
                   "sender_email"=> $order->billing_email,
                   "sender_name"=> $order->billing_first_name.' '.$order->billing_last_name,
                   "sender_phone"=> $order->billing_phone,
@@ -188,26 +188,26 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
           $secret_key = $this->secure_key;
 
           $signature = base64_encode(hash_hmac("sha256", $base_string, $secret_key, true));
-          $ch = curl_init('https://www.mlepay.com/api/v2/transaction/create');  
-          curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");                                                                     
-          curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string); 
-          curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);                                                                 
+          $ch = curl_init('https://www.mlepay.com/api/v2/transaction/create');
+          curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "POST");
+          curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+          curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
           curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-          curl_setopt($ch, CURLOPT_HTTPHEADER, array(                                                                          
-              'Content-Type: application/json',                                                                                
-              'X-Signature: ' . $signature)                                                                     
-          );                                                                                                                   
-           
+          curl_setopt($ch, CURLOPT_HTTPHEADER, array(
+              'Content-Type: application/json',
+              'X-Signature: ' . $signature)
+          );
+
           $result = curl_exec($ch);
           $status = curl_getinfo($ch, CURLINFO_HTTP_CODE);
           $result = json_decode($result, true);
           echo '<div id="mlepay_transaction_code_wrapper"><span id="mlepay_transaction_code_label">ML ePay Transaction Code:</span> <div id="mlepay_transaction_code">'. $result['transaction']['code'] . '</div><div id="mlepay_transaction_code_instructions">' . $this->instructions . '</div></div>' ;
-      
+
         }
         catch(Exception $e) {
 
           echo '<div id="mlepay_transaction_code_wrapper"><span id="mlepay_transaction_code_error">An Error occurred. Please try again.</span></div>';
-        
+
         }
 
     }
@@ -227,12 +227,12 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
         $gateway_extension = rawurlencode('?wc-api'.$gateway_url[1]);
 
         $base_string = 'POST&'.$http_access.$http_address.$gateway_extension.'&'.rawurlencode($body_response);
-        $secret_key = $this->secure_key;  
-   
+        $secret_key = $this->secure_key;
+
         $signature_ipn = base64_encode(hash_hmac("sha256", $base_string, $secret_key, true));
-      
+
         if( $headers['X-Signature'] == $signature_ipn ) {
-          
+
           $result = json_decode( $body_response, true );
           $result['description'];
 
@@ -242,7 +242,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
             $result['transaction_status']   = strtolower( $result['transaction_status'] );
 
             switch ( $result['transaction_status'] ) {
-              
+
               case 'paid' :
                 $order->update_status( 'completed', sprintf( __( 'Payment %s in ML Branch.', 'woocommerce' ), 'completed' ) );
                 $order->add_order_note( __( 'Payment received in ML Branch', 'woocommerce' ) );
@@ -259,7 +259,7 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 
               default :
               break;
-            
+
             }
 
             exit;
@@ -279,24 +279,24 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 
           $order_id  = (int) $payload;
           $order_key = $payload;
-        
+
         } elseif ( is_string( $payload ) ) {
-        
+
           $order_id  = (int) $payload;
           $order_key = $payload;
-        
+
         } else {
-        
+
           list( $order_id ) = $payload;
-        
+
         }
 
         $order = new WC_Order( $order_id );
         if ( ! isset( $order->id ) ) {
-        
+
           $order_id   = wc_get_order_id_by_order_key( $order_key );
           $order    = new WC_Order( $order_id );
-        
+
         }
 
         return $order;
@@ -324,21 +324,21 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
       * Request header
       */
       function parse_request_headers() {
-        
+
         $headers = array();
         foreach($_SERVER as $key => $value) {
-        
+
             if (substr($key, 0, 5) <> 'HTTP_') {
                 continue;
             }
-        
+
             $header = str_replace(' ', '-', ucwords(str_replace('_', ' ', strtolower(substr($key, 5)))));
             $headers[$header] = $value;
-        
+
         }
-        
+
         return $headers;
-      
+
       }
 
       /**
@@ -348,15 +348,14 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
 
         date_default_timezone_set("UTC");
         $hours = ((int)$hours) * 60 * 60;
-        $expire = date("H:i:s", time()+($hours)); 
-        $expiry = strtotime($expire);
+        $expire = time()+($hours);
 
-        return $expiry;
+        return $expire;
 
       }
 
     }
-    
+
     /**
     * Add the Gateway to WooCommerce
     **/
@@ -366,9 +365,9 @@ if ( in_array( 'woocommerce/woocommerce.php', apply_filters( 'active_plugins', g
         return $methods;
 
     }
-   
+
     add_filter('woocommerce_payment_gateways', 'woocommerce_add_gateway_mlepay_gateway' );
-    
+
 
   }
 }
